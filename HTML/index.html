@@ -1795,7 +1795,7 @@ function removeParecerSug(i){ syncFromDOM(); if(_sugs.length>1) _sugs.splice(i,1
 // ── HTML email builder helpers ──
 var FS = 'font-family:Tahoma,sans-serif;font-size:11pt;';
 var PS = FS+'line-height:1.6;color:#000000;margin:0 0 12px 0;';
-var BLUE = '#0070C0';
+var BLUE = '#0040C0';
 var RED  = '#FF0000';
 
 function p(content, extra){
@@ -1845,7 +1845,7 @@ function buildSugsHTML(){
   var h = '';
   _sugs.forEach(function(s){
     if(!s.trim()) return;
-    h += p(escH(s));
+    h += p('<strong style="color:'+BLUE+';">'+escH(s)+'</strong>');
   });
   return h;
 }
@@ -1922,11 +1922,11 @@ function tpl_comComp(marca, ct, ch, ah, sh, obs){
     p('Com a aplicação de uma estratégia adequada de depósito, é possível reduzir o risco de conflito e melhorar as chances de deferimento do pedido.') +
     sec('ESTRATÉGIA SUGERIDA') +
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
-    ch +
+    ch + '<br>' +
     p('Considerando as anterioridades identificadas, não recomendamos solicitar a marca apenas na forma isolada, pois isso pode aumentar o risco de conflito durante o exame realizado pelo INPI.') +
     p('A estratégia mais segura nesses casos é incorporar um elemento distintivo adicional ao nome, formando um conjunto marcário mais forte e reduzindo a proximidade com as marcas anteriormente registradas.') +
     p('Alguns exemplos de possíveis composições para a marca seriam:') + sh +
-    p('ou qualquer outra variação que o cliente prefira utilizar após ou antes o elemento principal.') +
+    hl(b('ou qualquer outra variação que o cliente prefira utilizar após ou antes o elemento principal.')) + '<br>' +
     p('Essa estratégia cria um novo conjunto marcário, aumentando o grau de distintividade da marca e melhorando as chances de deferimento pelo INPI.') +
     p('Também recomendamos que o pedido seja realizado na forma:') +
     p('• '+b('Marca nominativa')+' \u2013 proteção exclusiva do nome') +
