@@ -1696,49 +1696,67 @@ function renderClassesList(){
   var el = document.getElementById('parecer-classes-list');
   if(!el) return;
   var h = '';
-  _classes.forEach(function(c, i){
-    h += '<div class="parecer-row">' +
-      '<input class="browse-filter parecer-cl-num" placeholder="Cl." value="'+escH(c.cl)+'" onchange="_pCS('+i+','cl',this.value)" oninput="_pCS('+i+','cl',this.value)">' +
-      '<textarea class="browse-filter" style="flex:1;resize:vertical;" rows="2" placeholder="Especificação exata..." onchange="_pCS('+i+','spec',this.value)" oninput="_pCS('+i+','spec',this.value)">'+escH(c.spec)+'</textarea>' +
+  _classes.forEach(function(obj, i){
+    h += '<div class="parecer-row" data-cl-idx="'+i+'">' +
+      '<input class="browse-filter parecer-cl-num pcl-num" placeholder="Cl." value="'+escH(obj.cl)+'">' +
+      '<textarea class="browse-filter pcl-spec" style="flex:1;resize:vertical;" rows="2" placeholder="Especificação exata...">'+escH(obj.spec)+'</textarea>' +
       (_classes.length > 1 ? '<button class="parecer-remove" onclick="removeParecerClasse('+i+')">✕</button>' : '') +
       '</div>';
   });
   el.innerHTML = h;
 }
 
-window._pCS = function(i,k,v){ if(_classes[i]) _classes[i][k]=v; };
-
 function renderAntList(){
   var el = document.getElementById('parecer-ant-list');
   if(!el) return;
   var h = '';
   _ants.forEach(function(a, i){
-    h += '<div class="parecer-row">' +
-      '<input class="browse-filter" style="flex:2;min-width:0;" placeholder="Nome da marca" value="'+escH(a.marca)+'" onchange="_pAS('+i+','marca',this.value)" oninput="_pAS('+i+','marca',this.value)">' +
-      '<input class="browse-filter parecer-cl-num" placeholder="Cl." value="'+escH(a.classe)+'" onchange="_pAS('+i+','classe',this.value)" oninput="_pAS('+i+','classe',this.value)">' +
-      '<input class="browse-filter" style="flex:1.5;min-width:0;" placeholder="Situação (ex: DEFERIDA)" value="'+escH(a.sit)+'" onchange="_pAS('+i+','sit',this.value)" oninput="_pAS('+i+','sit',this.value)">' +
+    h += '<div class="parecer-row" data-ant-idx="'+i+'">' +
+      '<input class="browse-filter pant-marca" style="flex:2;min-width:0;" placeholder="Nome da marca" value="'+escH(a.marca)+'">' +
+      '<input class="browse-filter parecer-cl-num pant-classe" placeholder="Cl." value="'+escH(a.classe)+'">' +
+      '<input class="browse-filter pant-sit" style="flex:1.5;min-width:0;" placeholder="Situação (ex: DEFERIDA)" value="'+escH(a.sit)+'">' +
       '<button class="parecer-remove" onclick="removeParecerAnt('+i+')">✕</button>' +
       '</div>';
   });
   el.innerHTML = h;
 }
 
-window._pAS = function(i,k,v){ if(_ants[i]) _ants[i][k]=v; };
-
 function renderSugList(){
   var el = document.getElementById('parecer-sug-list');
   if(!el) return;
   var h = '';
   _sugs.forEach(function(s, i){
-    h += '<div class="parecer-row">' +
-      '<input class="browse-filter" style="flex:1;" placeholder="Sugestão '+(i+1)+'" value="'+escH(s)+'" onchange="_pSS('+i+',this.value)" oninput="_pSS('+i+',this.value)">' +
+    h += '<div class="parecer-row" data-sug-idx="'+i+'">' +
+      '<input class="browse-filter psug-val" style="flex:1;" placeholder="Sugestão '+(i+1)+'" value="'+escH(s)+'">' +
       (_sugs.length > 1 ? '<button class="parecer-remove" onclick="removeParecerSug('+i+')">✕</button>' : '') +
       '</div>';
   });
   el.innerHTML = h;
 }
 
-window._pSS = function(i,v){ _sugs[i]=v; };
+function syncFromDOM(){
+  document.querySelectorAll('#parecer-classes-list .parecer-row').forEach(function(row){
+    var i = parseInt(row.dataset.clIdx);
+    if(isNaN(i)||!_classes[i]) return;
+    var num = row.querySelector('.pcl-num'); var spec = row.querySelector('.pcl-spec');
+    if(num) _classes[i].cl = num.value;
+    if(spec) _classes[i].spec = spec.value;
+  });
+  document.querySelectorAll('#parecer-ant-list .parecer-row').forEach(function(row){
+    var i = parseInt(row.dataset.antIdx);
+    if(isNaN(i)||!_ants[i]) return;
+    var marca = row.querySelector('.pant-marca'); var cl = row.querySelector('.pant-classe'); var sit = row.querySelector('.pant-sit');
+    if(marca) _ants[i].marca = marca.value;
+    if(cl) _ants[i].classe = cl.value;
+    if(sit) _ants[i].sit = sit.value;
+  });
+  document.querySelectorAll('#parecer-sug-list .parecer-row').forEach(function(row){
+    var i = parseInt(row.dataset.sugIdx);
+    if(isNaN(i)) return;
+    var inp = row.querySelector('.psug-val');
+    if(inp) _sugs[i] = inp.value;
+  });
+}
 
 function addParecerClasse(){ _classes.push({cl:'',spec:''}); renderClassesList(); }
 function removeParecerClasse(i){ if(_classes.length>1) _classes.splice(i,1); renderClassesList(); }
@@ -1937,6 +1955,7 @@ function tpl_inviavel(marca, ct, ch, ah){
 // ── MAIN GENERATE FUNCTION ──
 
 function gerarParecer(){
+  syncFromDOM();
   var marca = (document.getElementById('parecer-marca')||{}).value || '';
   marca = marca.trim();
   if(!marca){ alert('Informe o nome da marca.'); return; }
