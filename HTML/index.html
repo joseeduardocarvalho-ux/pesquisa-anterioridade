@@ -1898,7 +1898,7 @@ function tpl_semAnt(marca, ct, ch, obs){
     p('Ainda assim, é importante considerar que o processo de registro de marca envolve análise técnica do órgão, podendo ocorrer eventual identificação de marcas semelhantes durante o exame ou apresentação de oposição por terceiros.') +
     sec('ESTRATÉGIA SUGERIDA') +
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
-    ch + buildMarcaTypes() +
+    ch + '<br>' + buildMarcaTypes() +
     p('Essa estratégia aumenta o nível de proteção e reduz riscos futuros relacionados ao uso da marca por terceiros.') +
     buildConsideracoes(obs) +
     buildImportante(true) + buildFooterSemAnt();
@@ -1939,7 +1939,7 @@ function tpl_exata(marca, ct, ch, ah, obs){
     p('Com a aplicação de uma estratégia adequada de depósito, é possível reduzir o risco de conflito e melhorar as chances de deferimento do pedido.') +
     sec('ESTRATÉGIA SUGERIDA') +
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
-    ch +
+    ch + '<br>' +
     p('Considerando as anterioridades identificadas durante a pesquisa, verificamos a existência de marcas que apresentam certa proximidade estrutural no mesmo segmento de atividade.') +
     p('Apesar dessa proximidade, as marcas analisadas não reproduzem de forma idêntica a denominação '+c(marca.toUpperCase())+', mesmo apresentando diferenças na composição geral do sinal distintivo, sugerimos que o pedido seja feito na forma exata, porém tudo junto, sem espaço.') +
     p('Dessa forma, é possível realizar o pedido de registro da marca na forma pretendida, cientes de que o exame realizado pelo INPI leva em consideração o conjunto marcário como um todo, incluindo aspectos fonéticos, gráficos e conceituais.') +
@@ -1959,7 +1959,7 @@ function tpl_classeAlt(marca, ct, ch, ah, obs){
     p('Com a aplicação de uma estratégia adequada de depósito, é possível reduzir o risco de conflito e melhorar as chances de deferimento do pedido.') +
     sec('ESTRATÉGIA SUGERIDA') +
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
-    ch +
+    ch + '<br>' +
     p('Considerando as anterioridades identificadas durante a pesquisa, verificamos a existência de marcas semelhantes registradas na classe originalmente pretendida, o que pode aumentar o risco de conflito durante o exame realizado pelo INPI.') +
     p('No entanto, ao analisar a natureza da atividade exercida pela empresa e as possibilidades de enquadramento dentro da Classificação Internacional de Nice, identificamos que os serviços também podem ser enquadrados em classe distinta, dependendo da forma como são descritos no pedido de registro.') +
     p('Essa estratégia é juridicamente possível em razão do princípio da especialidade das marcas, previsto na Lei da Propriedade Industrial, segundo o qual marcas semelhantes podem coexistir quando destinadas a identificar produtos ou serviços de naturezas distintas.') +
@@ -1978,7 +1978,7 @@ function tpl_inviavel(marca, ct, ch, ah, obs){
     p('Após análise das anterioridades identificadas, verificamos que há registros com alto grau de semelhança com a marca pretendida no mesmo segmento de atividade, o que representa um risco elevado de indeferimento durante o exame realizado pelo INPI.') +
     sec('ESTRATÉGIA SUGERIDA') +
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
-    ch +
+    ch + '<br>' +
     p('Diante das anterioridades identificadas, recomendamos que o cliente avalie a viabilidade de trabalhar com uma denominação distinta, de forma a reduzir o risco de conflito com os registros já existentes e aumentar as chances de deferimento do pedido junto ao INPI.') +
     buildConsideracoes(obs) +
     buildImportante(false) + buildFooterComAnt();
