@@ -391,14 +391,7 @@ footer{padding:56px 0 32px;text-align:center;font-size:10px;color:var(--text3);l
       <div id="parecer-ant-section" style="display:none;margin-bottom:14px;">
         <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;">Anterioridades Identificadas</label>
         <div id="parecer-ant-list"></div>
-        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-          <button class="sel-btn" onclick="addParecerAnt()">+ Adicionar anterioridade</button>
-          <button class="sel-btn" id="btn-obs-toggle" onclick="toggleObs()">+ Adicionar texto (observações)</button>
-        </div>
-        <div id="parecer-obs-section" style="display:none;margin-top:10px;">
-          <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:1.5px;">Observações</label>
-          <textarea id="parecer-obs" class="browse-filter" style="width:100%;box-sizing:border-box;resize:vertical;" rows="4" placeholder="Texto adicional que aparecerá em CONSIDERAÇÕES após a estratégia sugerida..."></textarea>
-        </div>
+        <button class="sel-btn" onclick="addParecerAnt()" style="margin-top:6px;">+ Adicionar anterioridade</button>
       </div>
 
       <!-- Sugestões (com-comp only) -->
