@@ -329,7 +329,7 @@ footer{padding:56px 0 32px;text-align:center;font-size:10px;color:var(--text3);l
     <button class="tab on" onclick="switchTab('search')">Buscar por atividade</button>
     <button class="tab" onclick="switchTab('browse')">Navegar por classe</button>
     <button class="tab" onclick="switchTab('presets')">Classificações Prontas</button>
-    <button class="tab" onclick="switchTab('parecer')">Parecer</button>
+    <button class="tab" onclick="switchTab('parecer')">Resultado da Pesquisa</button>
   </div>
 
   <!-- ════ SEARCH TAB ════ -->
@@ -360,14 +360,14 @@ footer{padding:56px 0 32px;text-align:center;font-size:10px;color:var(--text3);l
   <!-- ════ PARECER TAB ════ -->
   <div id="tab-parecer" class="hidden">
     <div class="glass" style="padding:22px;margin-top:20px;">
-      <span class="search-label" style="margin-bottom:18px;display:block;">Gerador de Parecer</span>
+      <span class="search-label" style="margin-bottom:18px;display:block;">Resultado da Pesquisa</span>
 
       <!-- Template selector -->
       <div style="margin-bottom:18px;">
         <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;">Modelo</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
           <button class="parecer-tpl-btn active" data-tpl="sem-ant" onclick="selectTemplate('sem-ant')">Sem Anterioridade</button>
-          <button class="parecer-tpl-btn" data-tpl="com-comp" onclick="selectTemplate('com-comp')">Com Anterioridade + Complemento</button>
+          <button class="parecer-tpl-btn" data-tpl="com-comp" onclick="selectTemplate('com-comp')">Complemento</button>
           <button class="parecer-tpl-btn" data-tpl="exata" onclick="selectTemplate('exata')">Exata</button>
           <button class="parecer-tpl-btn" data-tpl="classe-alt" onclick="selectTemplate('classe-alt')">Classe Alternativa</button>
           <button class="parecer-tpl-btn" data-tpl="inviavel" onclick="selectTemplate('inviavel')">Inviável</button>
@@ -391,7 +391,14 @@ footer{padding:56px 0 32px;text-align:center;font-size:10px;color:var(--text3);l
       <div id="parecer-ant-section" style="display:none;margin-bottom:14px;">
         <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;">Anterioridades Identificadas</label>
         <div id="parecer-ant-list"></div>
-        <button class="sel-btn" onclick="addParecerAnt()" style="margin-top:6px;">+ Adicionar anterioridade</button>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+          <button class="sel-btn" onclick="addParecerAnt()">+ Adicionar anterioridade</button>
+          <button class="sel-btn" id="btn-obs-toggle" onclick="toggleObs()">+ Adicionar texto (observações)</button>
+        </div>
+        <div id="parecer-obs-section" style="display:none;margin-top:10px;">
+          <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:1.5px;">Observações</label>
+          <textarea id="parecer-obs" class="browse-filter" style="width:100%;box-sizing:border-box;resize:vertical;" rows="4" placeholder="Texto adicional que aparecerá em CONSIDERAÇÕES após a estratégia sugerida..."></textarea>
+        </div>
       </div>
 
       <!-- Sugestões (com-comp only) -->
@@ -1706,15 +1713,27 @@ function renderClassesList(){
   el.innerHTML = h;
 }
 
+var _SIT_OPTS = [
+  '',
+  'Publicação de Pedido de Registro',
+  'Deferimento do Pedido de Registro',
+  'Indeferimento do Pedido do Registro',
+  'Notificação de Oposição',
+  'Prorrogação de Registro',
+  'Concessão do Pedido de Registro'
+];
+
 function renderAntList(){
   var el = document.getElementById('parecer-ant-list');
   if(!el) return;
+  var opts = _SIT_OPTS.map(function(o){ return '<option value="'+escH(o)+'">'+escH(o||'Selecione a situação...')+'</option>'; }).join('');
   var h = '';
   _ants.forEach(function(a, i){
+    var selOpts = _SIT_OPTS.map(function(o){ return '<option value="'+escH(o)+'"'+(a.sit===o?' selected':'')+'>'+escH(o||'Situação...')+'</option>'; }).join('');
     h += '<div class="parecer-row" data-ant-idx="'+i+'">' +
       '<input class="browse-filter pant-marca" style="flex:2;min-width:0;" placeholder="Nome da marca" value="'+escH(a.marca)+'">' +
       '<input class="browse-filter parecer-cl-num pant-classe" placeholder="Cl." value="'+escH(a.classe)+'">' +
-      '<input class="browse-filter pant-sit" style="flex:1.5;min-width:0;" placeholder="Situação (ex: DEFERIDA)" value="'+escH(a.sit)+'">' +
+      '<select class="browse-filter pant-sit" style="flex:2;min-width:0;cursor:pointer;">'+selOpts+'</select>' +
       '<button class="parecer-remove" onclick="removeParecerAnt('+i+')">✕</button>' +
       '</div>';
   });
@@ -1748,7 +1767,7 @@ function syncFromDOM(){
     var marca = row.querySelector('.pant-marca'); var cl = row.querySelector('.pant-classe'); var sit = row.querySelector('.pant-sit');
     if(marca) _ants[i].marca = marca.value;
     if(cl) _ants[i].classe = cl.value;
-    if(sit) _ants[i].sit = sit.value;
+    if(sit) _ants[i].sit = sit.value || '';
   });
   document.querySelectorAll('#parecer-sug-list .parecer-row').forEach(function(row){
     var i = parseInt(row.dataset.sugIdx);
@@ -1758,17 +1777,26 @@ function syncFromDOM(){
   });
 }
 
-function addParecerClasse(){ _classes.push({cl:'',spec:''}); renderClassesList(); }
-function removeParecerClasse(i){ if(_classes.length>1) _classes.splice(i,1); renderClassesList(); }
-function addParecerAnt(){ _ants.push({marca:'',classe:'',sit:''}); renderAntList(); }
-function removeParecerAnt(i){ _ants.splice(i,1); if(_ants.length===0) _ants.push({marca:'',classe:'',sit:''}); renderAntList(); }
-function addParecerSug(){ _sugs.push(''); renderSugList(); }
-function removeParecerSug(i){ if(_sugs.length>1) _sugs.splice(i,1); renderSugList(); }
+function toggleObs(){
+  var s = document.getElementById('parecer-obs-section');
+  var btn = document.getElementById('btn-obs-toggle');
+  if(!s) return;
+  var visible = s.style.display !== 'none';
+  s.style.display = visible ? 'none' : '';
+  if(btn) btn.textContent = visible ? '+ Adicionar texto (observações)' : '– Remover observações';
+}
+function addParecerClasse(){ syncFromDOM(); _classes.push({cl:'',spec:''}); renderClassesList(); }
+function removeParecerClasse(i){ syncFromDOM(); if(_classes.length>1) _classes.splice(i,1); renderClassesList(); }
+function addParecerAnt(){ syncFromDOM(); _ants.push({marca:'',classe:'',sit:''}); renderAntList(); }
+function removeParecerAnt(i){ syncFromDOM(); _ants.splice(i,1); if(_ants.length===0) _ants.push({marca:'',classe:'',sit:''}); renderAntList(); }
+function addParecerSug(){ syncFromDOM(); _sugs.push(''); renderSugList(); }
+function removeParecerSug(i){ syncFromDOM(); if(_sugs.length>1) _sugs.splice(i,1); renderSugList(); }
 
 // ── HTML email builder helpers ──
 var FS = 'font-family:Tahoma,sans-serif;font-size:11pt;';
 var PS = FS+'line-height:1.6;color:#000000;margin:0 0 12px 0;';
-var PURPLE = '#7030A0';
+var BLUE = '#0070C0';
+var RED  = '#FF0000';
 
 function p(content, extra){
   return '<p style="'+PS+(extra||'')+'">'+content+'</p>';
@@ -1777,8 +1805,9 @@ function sec(title){
   return '<p style="'+FS+'font-weight:bold;color:#000000;margin:22px 0 10px 0;font-size:11pt;">'+title+'</p>';
 }
 function b(t){ return '<strong>'+t+'</strong>'; }
-function bu(t){ return '<strong><u style="color:'+PURPLE+';">'+t+'</u></strong>'; }
-function c(t){ return '<strong style="color:'+PURPLE+';">'+t+'</strong>'; }
+function bu(t){ return '<strong><u style="color:'+BLUE+';">'+t+'</u></strong>'; }
+function c(t){ return '<strong style="color:'+BLUE+';">'+t+'</strong>'; }
+function red(t){ return '<strong style="color:'+RED+';">'+t+'</strong>'; }
 function hl(content){ return '<p style="'+PS+'background-color:#FFFF00;padding:2px 4px;">'+content+'</p>'; }
 
 function buildClassesText(){
@@ -1792,19 +1821,24 @@ function buildClassesHTML(){
   var h = '';
   _classes.forEach(function(cl){
     if(!cl.cl.trim()) return;
-    h += '<p style="'+PS+'">'+c('Classe '+escH(cl.cl)+':')+' '+escH(cl.spec)+'</p>';
+    h += '<p style="'+PS+'">'+c('CLASSE '+escH(cl.cl.toUpperCase())+':')+' '+escH(cl.spec)+'</p>';
   });
-  return h || '<p style="'+PS+'">'+c('Classe X:')+'<\/p>';
+  return h || '<p style="'+PS+'">'+c('CLASSE X:')+'<\/p>';
 }
 
 function buildAntsHTML(){
   var h = '';
   _ants.forEach(function(a){
     if(!a.marca.trim()) return;
-    var sit = a.sit.trim() ? ' – '+a.sit.toUpperCase() : '';
-    h += p('• '+a.marca.toUpperCase()+(a.classe.trim() ? ' – CLASSE: '+a.classe : '')+sit);
+    var sit = a.sit.trim() ? ' \u2013 '+a.sit.toUpperCase() : '';
+    h += p(red('• '+a.marca.toUpperCase()+(a.classe.trim() ? ' \u2013 CLASSE: '+a.classe : '')+sit));
   });
   return h || p('(nenhuma anterioridade adicionada)');
+}
+
+function buildConsideracoes(obs){
+  if(!obs||!obs.trim()) return '';
+  return sec('CONSIDERAÇÕES') + p(escH(obs.trim()));
 }
 
 function buildSugsHTML(){
@@ -1862,7 +1896,7 @@ function buildFooterComAnt(){
 
 // ── TEMPLATE BUILDERS ──
 
-function tpl_semAnt(marca, ct, ch){
+function tpl_semAnt(marca, ct, ch, obs){
   return buildIntro(marca) +
     p('Após análise da base de dados do INPI, '+bu('não foram localizados registros idênticos ou semelhantes que representem impedimento direto ao pedido da marca nessa classe.')+'.') +
     p('Dessa forma, '+b('entendemos que a marca apresenta um cenário favorável para tentativa de registro')+', uma vez que não foram identificadas anterioridades que indiquem conflito relevante dentro do mesmo ramo de atividade.') +
@@ -1873,10 +1907,11 @@ function tpl_semAnt(marca, ct, ch){
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
     ch + buildMarcaTypes() +
     p('Essa estratégia aumenta o nível de proteção e reduz riscos futuros relacionados ao uso da marca por terceiros.') +
+    buildConsideracoes(obs) +
     buildImportante(true) + buildFooterSemAnt();
 }
 
-function tpl_comComp(marca, ct, ch, ah, sh){
+function tpl_comComp(marca, ct, ch, ah, sh, obs){
   return buildIntro(marca) +
     p('Durante a pesquisa foram localizados registros contendo expressões semelhantes à marca pretendida.') +
     p('Entre as anterioridades identificadas, destacamos:') + ah +
@@ -1894,13 +1929,14 @@ function tpl_comComp(marca, ct, ch, ah, sh){
     p('ou qualquer outra variação que o cliente prefira utilizar após ou antes o elemento principal.') +
     p('Essa estratégia cria um novo conjunto marcário, aumentando o grau de distintividade da marca e melhorando as chances de deferimento pelo INPI.') +
     p('Também recomendamos que o pedido seja realizado na forma:') +
-    p('• '+b('Marca nominativa')+' – proteção exclusiva do nome') +
-    p('• '+b('Marca mista')+' – proteção do conjunto formado por nome + identidade visual') +
+    p('• '+b('Marca nominativa')+' \u2013 proteção exclusiva do nome') +
+    p('• '+b('Marca mista')+' \u2013 proteção do conjunto formado por nome + identidade visual') +
     p('Essa abordagem amplia a proteção jurídica da marca e fortalece a posição da empresa em eventual análise ou disputa administrativa.') +
+    buildConsideracoes(obs) +
     buildFundamentos() + buildImportante(false) + buildFooterComAnt();
 }
 
-function tpl_exata(marca, ct, ch, ah){
+function tpl_exata(marca, ct, ch, ah, obs){
   return buildIntro(marca) +
     p('Durante a pesquisa foram localizados registros contendo expressões semelhantes à marca pretendida.') +
     p('Entre as anterioridades identificadas, destacamos:') + ah +
@@ -1916,10 +1952,11 @@ function tpl_exata(marca, ct, ch, ah){
     p('Dessa forma, é possível realizar o pedido de registro da marca na forma pretendida, cientes de que o exame realizado pelo INPI leva em consideração o conjunto marcário como um todo, incluindo aspectos fonéticos, gráficos e conceituais.') +
     p('No entanto, é importante destacar que, em razão da existência de marcas anteriormente registradas no mesmo segmento, o processo poderá depender da interpretação do examinador quanto ao grau de distintividade da marca e à possibilidade de coexistência com os registros já existentes.') +
     p('Caso ocorra oposição ou eventual questionamento durante o exame do pedido, poderão ser apresentados fundamentos técnicos de defesa com base, entre outros pontos, na diferença entre os sinais marcários e na análise do conjunto distintivo da marca pretendida.') +
+    buildConsideracoes(obs) +
     buildFundamentos() + buildImportante(false) + buildFooterComAnt();
 }
 
-function tpl_classeAlt(marca, ct, ch, ah){
+function tpl_classeAlt(marca, ct, ch, ah, obs){
   return buildIntro(marca) +
     p('Durante a pesquisa foram localizados registros contendo expressões semelhantes à marca pretendida.') +
     p('Entre as anterioridades identificadas, destacamos:') + ah +
@@ -1934,10 +1971,11 @@ function tpl_classeAlt(marca, ct, ch, ah){
     p('No entanto, ao analisar a natureza da atividade exercida pela empresa e as possibilidades de enquadramento dentro da Classificação Internacional de Nice, identificamos que os serviços também podem ser enquadrados em classe distinta, dependendo da forma como são descritos no pedido de registro.') +
     p('Essa estratégia é juridicamente possível em razão do princípio da especialidade das marcas, previsto na Lei da Propriedade Industrial, segundo o qual marcas semelhantes podem coexistir quando destinadas a identificar produtos ou serviços de naturezas distintas.') +
     p('Dessa forma, recomendamos que o pedido de registro seja realizado na classe alternativa identificada na pesquisa, com a especificação adequada à atividade exercida pela empresa.') +
+    buildConsideracoes(obs) +
     buildFundamentos() + buildImportante(false) + buildFooterComAnt();
 }
 
-function tpl_inviavel(marca, ct, ch, ah){
+function tpl_inviavel(marca, ct, ch, ah, obs){
   return buildIntro(marca) +
     p('Durante a pesquisa foram localizados registros contendo expressões semelhantes à marca pretendida.') +
     p('Entre as anterioridades identificadas, destacamos:') + ah +
@@ -1949,6 +1987,7 @@ function tpl_inviavel(marca, ct, ch, ah){
     p('Recomendamos que o pedido de registro seja realizado na '+c(ct)+', utilizando a(s) seguinte(s) especificação(ões) exata(s):') +
     ch +
     p('Diante das anterioridades identificadas, recomendamos que o cliente avalie a viabilidade de trabalhar com uma denominação distinta, de forma a reduzir o risco de conflito com os registros já existentes e aumentar as chances de deferimento do pedido junto ao INPI.') +
+    buildConsideracoes(obs) +
     buildImportante(false) + buildFooterComAnt();
 }
 
@@ -1964,14 +2003,15 @@ function gerarParecer(){
   var ch = buildClassesHTML();
   var ah = buildAntsHTML();
   var sh = buildSugsHTML();
+  var obs = (document.getElementById('parecer-obs')||{}).value || '';
 
   var emailHTML = '';
   switch(_tpl){
-    case 'sem-ant':    emailHTML = tpl_semAnt(marca, ct, ch); break;
-    case 'com-comp':   emailHTML = tpl_comComp(marca, ct, ch, ah, sh); break;
-    case 'exata':      emailHTML = tpl_exata(marca, ct, ch, ah); break;
-    case 'classe-alt': emailHTML = tpl_classeAlt(marca, ct, ch, ah); break;
-    case 'inviavel':   emailHTML = tpl_inviavel(marca, ct, ch, ah); break;
+    case 'sem-ant':    emailHTML = tpl_semAnt(marca, ct, ch, obs); break;
+    case 'com-comp':   emailHTML = tpl_comComp(marca, ct, ch, ah, sh, obs); break;
+    case 'exata':      emailHTML = tpl_exata(marca, ct, ch, ah, obs); break;
+    case 'classe-alt': emailHTML = tpl_classeAlt(marca, ct, ch, ah, obs); break;
+    case 'inviavel':   emailHTML = tpl_inviavel(marca, ct, ch, ah, obs); break;
   }
 
   var wrapper = '<div style="font-family:Tahoma,sans-serif;font-size:11pt;line-height:1.6;color:#000000;max-width:720px;">'+emailHTML+'<\/div>';
@@ -1979,7 +2019,7 @@ function gerarParecer(){
   document.getElementById('parecer-preview').innerHTML =
     '<div class="glass" style="padding:24px;margin-top:20px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">' +
-    '<span class="email-title">PREVIEW DO PARECER</span>' +
+    '<span class="email-title">PREVIEW DO RESULTADO</span>' +
     '<button class="btn-copy" onclick="copyParecer()">Copiar para email</button>' +
     '<\/div>' +
     '<div id="parecer-html-preview" style="background:#ffffff;padding:24px 32px;border-radius:8px;color:#000;border:1px solid rgba(255,255,255,0.12);">' +
